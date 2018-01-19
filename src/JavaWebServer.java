@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -7,6 +8,7 @@ import java.net.Socket;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -40,25 +42,36 @@ public class JavaWebServer {
         BufferedReader in;
         PrintWriter out;
         String request;
+        Scanner fileread;
+        String finalreq= "";
+        String response="";
+        
  
         try
         {
             String webServerAddress = s.getInetAddress().toString();
             System.out.println("New Connection:" + webServerAddress);
             in = new BufferedReader(new InputStreamReader(s.getInputStream()));
- 
+            while(in.ready()) {
             request = in.readLine();
+            if(request.contains("GET")) {
+            StringBuilder req= new StringBuilder(request);
+            System.out.println(req.length());
+            finalreq = req.substring(5, req.length()-9);
+            System.out.println("--- Client request: " + finalreq);
+            fileread = new Scanner(new File(finalreq));
+            
+            }
             System.out.println("--- Client request: " + request);
- 
+            }
             out = new PrintWriter(s.getOutputStream(), true);
+            fileread = new Scanner(new File(finalreq));
+            while(fileread.hasNextLine()) {
+            	response += fileread.nextLine();	
+            }
             out.println("HTTP/1.0 200");
             out.println("Content-type: text/html");
             out.println("Server-name: myserver");
-            String response = "<html>"
-                    + "<head>"
-                    + "<title>My Web Server</title></head>"
-                    + "<h1>Change the server code so that it can read files!</h1>"
-                    + "</html>";
             out.println("Content-length: " + response.length());
             out.println("");
             out.println(response);
